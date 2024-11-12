@@ -1,9 +1,14 @@
 package lk.ijse.CropMonitoring.entity;
 
+
 import jakarta.persistence.*;
+import lk.ijse.CropMonitoring.entity.association.CropLogDetailsEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor

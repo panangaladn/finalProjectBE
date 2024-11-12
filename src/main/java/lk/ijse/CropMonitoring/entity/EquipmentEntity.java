@@ -1,11 +1,11 @@
 package lk.ijse.CropMonitoring.entity;
 
-
 import jakarta.persistence.*;
+import lk.ijse.CropMonitoring.entity.enums.EquipmentTypes;
+import lk.ijse.CropMonitoring.entity.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 
 @AllArgsConstructor
 @NoArgsConstructor
