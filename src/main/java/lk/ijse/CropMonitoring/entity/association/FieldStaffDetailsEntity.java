@@ -1,9 +1,9 @@
 package lk.ijse.CropMonitoring.entity.association;
 
 import jakarta.persistence.*;
-import lk.ijse.greenshadow.Crop_monitoring_system.embedded.FieldStaffDetailsPK;
-import lk.ijse.greenshadow.Crop_monitoring_system.entity.FieldEntity;
-import lk.ijse.greenshadow.Crop_monitoring_system.entity.StaffEntity;
+import lk.ijse.CropMonitoring.embedded.FieldStaffDetailsPK;
+import lk.ijse.CropMonitoring.entity.FieldEntity;
+import lk.ijse.CropMonitoring.entity.StaffEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

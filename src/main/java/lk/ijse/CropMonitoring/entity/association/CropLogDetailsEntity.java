@@ -1,8 +1,9 @@
 package lk.ijse.CropMonitoring.entity.association;
 
 import jakarta.persistence.*;
-import lk.ijse.CropMonitoring.entity.
+
 import lk.ijse.CropMonitoring.embedded.CropLogDetailsPK;
+import lk.ijse.CropMonitoring.entity.CropEntity;
 import lk.ijse.CropMonitoring.entity.FieldEntity;
 import lk.ijse.CropMonitoring.entity.MonitoringLogEntity;
 import lk.ijse.CropMonitoring.entity.StaffEntity;
