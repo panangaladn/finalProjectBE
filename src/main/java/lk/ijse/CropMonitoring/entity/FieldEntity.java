@@ -1,6 +1,5 @@
 package lk.ijse.CropMonitoring.entity;
 
-
 import jakarta.persistence.*;
 import lk.ijse.CropMonitoring.entity.association.FieldLogDetailsEntity;
 import lk.ijse.CropMonitoring.entity.association.FieldStaffDetailsEntity;
@@ -27,22 +26,23 @@ public class FieldEntity {
     private Point fieldLocation;
     @Column(name = "field_size")
     private double fieldSize;
-    @Column(name = "image_1", columnDefinition = "LONGTEXT")
-    private String image1;
-    @Column(name = "image_2", columnDefinition = "LONGTEXT")
-    private String image2;
+    @Column(name = "field_image_1", columnDefinition = "LONGTEXT")
+    private String fieldImage1;
+    @Column(name = "field_image_2", columnDefinition = "LONGTEXT")
+    private String fieldImage2;
+
 
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CropEntity> cropList = new ArrayList<>();
+    private java.util.List<CropEntity> cropList = new ArrayList<>();
 
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<EquipmentEntity> equipmentList = new ArrayList<>();
+    private java.util.List<EquipmentEntity> equipmentList = new ArrayList<>();
 
     //Associate
 
     // Associate with FieldStaffDetailsEntity
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<FieldStaffDetailsEntity> fieldStaffDetailsList = new ArrayList<>();
+    private java.util.List<FieldStaffDetailsEntity> fieldStaffDetailsList = new ArrayList<>();
 
 
     // Associate with FieldLogDetailsEntity

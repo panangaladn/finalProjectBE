@@ -1,4 +1,4 @@
-package lk.ijse.CropMonitoring.dto.Impl;
+package lk.ijse.CropMonitoring.dto.impl;
 
 
 import lk.ijse.CropMonitoring.customObj.MonitoringLogResponse;

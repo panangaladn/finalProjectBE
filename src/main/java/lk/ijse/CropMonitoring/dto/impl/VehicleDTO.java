@@ -1,8 +1,7 @@
-package lk.ijse.CropMonitoring.dto.Impl;
+package lk.ijse.CropMonitoring.dto.impl;
 
 import lk.ijse.CropMonitoring.customObj.VehicleResponse;
 import lk.ijse.CropMonitoring.dto.SuperDTO;
-import lk.ijse.CropMonitoring.entity.StaffEntity;
 import lk.ijse.CropMonitoring.entity.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
