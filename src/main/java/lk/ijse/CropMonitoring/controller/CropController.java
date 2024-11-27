@@ -2,15 +2,13 @@ package lk.ijse.CropMonitoring.controller;
 
 
 import lk.ijse.CropMonitoring.customObj.CropResponse;
-import lk.ijse.CropMonitoring.dao.CropDao;
-import lk.ijse.CropMonitoring.dao.FieldDao;
 import lk.ijse.CropMonitoring.dto.impl.CropDTO;
-import lk.ijse.CropMonitoring.entity.FieldEntity;
 import lk.ijse.CropMonitoring.exception.CropNotFoundException;
 import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
 import lk.ijse.CropMonitoring.service.CropService;
 import lk.ijse.CropMonitoring.util.AppUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,15 +21,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/crops")
 @RequiredArgsConstructor
+@Slf4j
 public class CropController {
     @Autowired
     private final CropService cropService;
-
-    private final FieldDao fieldDao;
-
-    @Autowired
-    private CropDao cropDao;
-
 
     @GetMapping("/health")
     public String healthCheck(){
@@ -39,8 +32,8 @@ public class CropController {
     }
 
     /**To Do CRUD Operation**/
-    //Save Crop
 
+    //Save Crop
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> saveCrop(
             @RequestParam("cropCommonName") String cropCommonName,
@@ -54,32 +47,25 @@ public class CropController {
             byte[] imageByteCollection1 = cropImage.getBytes();
             String base64ProfilePic1 = AppUtil.toBase64ProfilePic(imageByteCollection1);
 
-            // Fetch the FieldEntity using the fieldCode
-            FieldEntity field = fieldDao.findByFieldCode(fieldCode);
-            if (field == null) {
-                return new ResponseEntity<>("Field not found", HttpStatus.NOT_FOUND);
-            }
-
             CropDTO buildCropDTO = new CropDTO();
             buildCropDTO.setCropCommonName(cropCommonName);
             buildCropDTO.setCropScientificName(cropScientificName);
             buildCropDTO.setCropImage(base64ProfilePic1);
             buildCropDTO.setCategory(category);
             buildCropDTO.setCropSeason(cropSeason);
-            buildCropDTO.setField(field);
+            buildCropDTO.setFieldCode(fieldCode);
 
             cropService.saveCrop(buildCropDTO);
-
             return new ResponseEntity<>(HttpStatus.CREATED);
         }catch (DataPersistFailedException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Crop not saved: Field not found for the provided fieldCode", HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    //Update Crop
+    // Update Crop
     @PatchMapping(value = "/{cropCode}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateCrop(
             @PathVariable("cropCode") String cropCode,
@@ -94,23 +80,15 @@ public class CropController {
             byte[] imageByteCollection1 = cropImage.getBytes();
             String base64ProfilePic1 = AppUtil.toBase64ProfilePic(imageByteCollection1);
 
-            // Fetch the FieldEntity using the fieldCode
-            FieldEntity field = fieldDao.findByFieldCode(fieldCode);
-            if (field == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-
             CropDTO updateCrop = new CropDTO();
-            updateCrop.setCropCode(cropCode);
             updateCrop.setCropCommonName(cropCommonName);
             updateCrop.setCropScientificName(cropScientificName);
             updateCrop.setCropImage(base64ProfilePic1);
             updateCrop.setCategory(category);
             updateCrop.setCropSeason(cropSeason);
-            updateCrop.setField(field);
+            updateCrop.setFieldCode(fieldCode);
 
-            cropService.updateCrop(updateCrop);
-
+            cropService.updateCrop(updateCrop, cropCode);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (DataPersistFailedException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -119,10 +97,6 @@ public class CropController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-    //Delete Crop
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCrop(@PathVariable("id") String cropCode) {
         try {

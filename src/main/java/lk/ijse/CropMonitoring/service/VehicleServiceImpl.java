@@ -1,21 +1,18 @@
 package lk.ijse.CropMonitoring.service;
 
 import jakarta.transaction.Transactional;
-import lk.ijse.CropMonitoring.customObj.StaffErrorResponse;
 import lk.ijse.CropMonitoring.customObj.VehicleErrorResponse;
 import lk.ijse.CropMonitoring.customObj.VehicleResponse;
-import lk.ijse.CropMonitoring.dao.StaffDao;
-import lk.ijse.CropMonitoring.dao.VehicleDao;
-import lk.ijse.CropMonitoring.dto.impl.StaffDTO;
 import lk.ijse.CropMonitoring.dto.impl.VehicleDTO;
 import lk.ijse.CropMonitoring.entity.StaffEntity;
 import lk.ijse.CropMonitoring.entity.VehicleEntity;
 import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
 import lk.ijse.CropMonitoring.exception.StaffNotFoundException;
+import lk.ijse.CropMonitoring.repository.StaffRepository;
+import lk.ijse.CropMonitoring.repository.VehicleRepository;
 import lk.ijse.CropMonitoring.util.AppUtil;
 import lk.ijse.CropMonitoring.util.Mapping;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,33 +23,32 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class VehicleServiceImpl implements VehicleService {
 
-    @Autowired
     private final Mapping mapping;
-
-    private final VehicleDao vehicleDao;
-
-    private final StaffDao staffDao;
-
+    private final VehicleRepository vehicleDao;
+    private final StaffRepository staffDao;
 
     @Override
     public void saveVehicle(VehicleDTO vehicleDTO) {
-
-        try{
+        try {
             List<String> vehicleCode = vehicleDao.findLastVehicleId();
             String lastVehicleId = vehicleCode.isEmpty() ? null : vehicleCode.get(0);
             vehicleDTO.setVehicleCode(AppUtil.generateVehicleId(lastVehicleId));
 
-            VehicleEntity isSaveVehicle = vehicleDao.save(mapping.convertToVehicleEntity(vehicleDTO));
-            if (isSaveVehicle == null) {
-                throw new DataPersistFailedException("Unable to save vehicle");
+            // Call the correct method for checking the staff member
+            StaffEntity staffEntity = staffDao.findByStaffMemberId(vehicleDTO.getStaffMemberId());
+            if (staffEntity == null) {
+                throw new StaffNotFoundException("Staff not found for ID: " + vehicleDTO.getStaffMemberId());
             }
 
+            VehicleEntity savedVehicle = vehicleDao.save(mapping.convertToVehicleEntity(vehicleDTO));
+            if (savedVehicle == null) {
+                throw new DataPersistFailedException("Failed to save vehicle with ID: " + vehicleDTO.getVehicleCode());
+            }
         } catch (DataPersistFailedException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error occurred while saving vehicle", e);
         }
-
     }
 
     @Override
@@ -66,7 +62,6 @@ public class VehicleServiceImpl implements VehicleService {
             if (byStaffMemberId == null) {
 //                return new ResponseEntity<>("Staff not found", HttpStatus.NOT_FOUND);
             }
-
 
 
             VehicleEntity vehicleEntity = tmpStaffEntity.get();

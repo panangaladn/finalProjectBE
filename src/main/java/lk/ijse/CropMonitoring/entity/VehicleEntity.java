@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -29,7 +27,8 @@ public class VehicleEntity {
     @Column(name = "remarks")
     private String remarks;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+//    @ManyToOne
     @JoinColumn(name = "staff_member_id", referencedColumnName = "staff_member_id")
     private StaffEntity staff;
 }

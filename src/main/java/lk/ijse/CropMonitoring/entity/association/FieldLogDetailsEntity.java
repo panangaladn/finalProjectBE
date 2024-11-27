@@ -1,6 +1,5 @@
 package lk.ijse.CropMonitoring.entity.association;
 
-
 import jakarta.persistence.*;
 import lk.ijse.CropMonitoring.embedded.FieldLogDetailsPK;
 import lk.ijse.CropMonitoring.entity.FieldEntity;

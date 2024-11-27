@@ -9,7 +9,6 @@ import lk.ijse.CropMonitoring.exception.FieldNotFoundException;
 import lk.ijse.CropMonitoring.service.MonitoringLogService;
 import lk.ijse.CropMonitoring.util.AppUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MonitoringLogController {
 
-    @Autowired
     private final MonitoringLogService monitoringLogService;
 
     @GetMapping("/health")

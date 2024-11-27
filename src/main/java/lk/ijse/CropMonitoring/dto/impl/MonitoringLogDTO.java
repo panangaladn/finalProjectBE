@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +19,9 @@ public class MonitoringLogDTO implements SuperDTO, MonitoringLogResponse {
     private Date logDate;
     private String logObservation;
     private String observedImage;
+
+    //Associate
+    private List<String> fieldCodes = new ArrayList<>();
+    private List<String> cropCodes = new ArrayList<>();
+    private List<String> staffMemberIds = new ArrayList<>();
 }

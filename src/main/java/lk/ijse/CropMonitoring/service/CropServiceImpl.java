@@ -3,9 +3,9 @@ package lk.ijse.CropMonitoring.service;
 import jakarta.transaction.Transactional;
 import lk.ijse.CropMonitoring.customObj.CropErrorResponse;
 import lk.ijse.CropMonitoring.customObj.CropResponse;
-import lk.ijse.CropMonitoring.dao.CropDao;
-import lk.ijse.CropMonitoring.dao.FieldDao;
 import lk.ijse.CropMonitoring.dto.impl.CropDTO;
+import lk.ijse.CropMonitoring.repository.CropRepository;
+import lk.ijse.CropMonitoring.repository.FieldRepository;
 import lk.ijse.CropMonitoring.entity.CropEntity;
 import lk.ijse.CropMonitoring.entity.FieldEntity;
 import lk.ijse.CropMonitoring.exception.CropNotFoundException;
@@ -13,7 +13,7 @@ import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
 import lk.ijse.CropMonitoring.util.AppUtil;
 import lk.ijse.CropMonitoring.util.Mapping;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,81 +22,81 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class CropServiceImpl implements CropService {
 
-    private final CropDao cropDao;
+    private final CropRepository cropRepository;
 
-    @Autowired
+
     private final Mapping mapping;
 
-    private final FieldDao fieldDao;
+    private final FieldRepository fieldDao;
+
 
     @Override
     public void saveCrop(CropDTO cropDTO) {
-        List<String> cropCode = cropDao.findLastCropCode();
+        List<String> cropCode = cropRepository.findLastCropCode();
         String lastCropCode = cropCode.isEmpty() ? null : cropCode.get(0);
         cropDTO.setCropCode(AppUtil.generateNextCropId(lastCropCode));
 
-        // Fetch the FieldEntity using fieldCode
-        FieldEntity field = fieldDao.findByFieldCode(cropDTO.getField().getFieldCode());
+        if (cropRepository.existsById(cropDTO.getCropCode())) {
+            throw new DataPersistFailedException("Crop not saved: Crop with the same code already exists");
+        }
+
+        FieldEntity field = fieldDao.findByFieldCode(cropDTO.getFieldCode());
         if (field == null) {
-            throw new DataPersistFailedException("Field not found");
+            throw new DataPersistFailedException("Field not found for the provided fieldCode");
         }
 
-        cropDTO.setField(field);  // Set the FieldEntity into CropDTO
 
-        CropEntity isSaveCrop = cropDao.save(mapping.convertToCropEntity(cropDTO));
-
+        CropEntity isSaveCrop = cropRepository.save(mapping.convertToCropEntity(cropDTO));
         if (isSaveCrop == null) {
-            throw new DataPersistFailedException("Cannot save data");
+            throw new DataPersistFailedException("Crop not saved: Unable to persist CropEntity");
         }
-        System.out.println("Saving CropEntity:"+isSaveCrop.getCropCode()+isSaveCrop.getCropCommonName());
-
     }
 
     @Override
-    public void updateCrop(CropDTO updateCrop) {
-        Optional<CropEntity> tmpCrop = cropDao.findById(updateCrop.getCropCode());
-        if (!tmpCrop.isPresent()) {
-            throw new CropNotFoundException("Crop with code " + updateCrop.getCropCode() + " not found");
+    public void updateCrop(CropDTO updateCrop, String cropCode) {
+        // Check if the CropEntity exists
+        Optional<CropEntity> existingCropTmp = cropRepository.findById(cropCode);
+        if (existingCropTmp.isEmpty()) {
+            throw new CropNotFoundException("Crop with code " + cropCode + " not found");
         }
 
-        // Fetch the FieldEntity using fieldCode
-        FieldEntity field = fieldDao.findByFieldCode(updateCrop.getField().getFieldCode());
+        // Validate and fetch FieldEntity using fieldCode
+        FieldEntity field = fieldDao.findByFieldCode(updateCrop.getFieldCode());
         if (field == null) {
-            throw new DataPersistFailedException("Field with code " + updateCrop.getField().getFieldCode() + " not found");
+            throw new DataPersistFailedException("Field not found for the provided fieldCode");
         }
 
-        System.out.println("Field found: " + field.getFieldCode());
+        CropEntity existingCrop = existingCropTmp.get();
 
-        // Update the CropEntity with new values
-        CropEntity cropEntity = tmpCrop.get();
-        cropEntity.setCropCommonName(updateCrop.getCropCommonName());
-        cropEntity.setCropScientificName(updateCrop.getCropScientificName());
-        cropEntity.setCropImage(updateCrop.getCropImage());
-        cropEntity.setCategory(updateCrop.getCategory());
-        cropEntity.setCropSeason(updateCrop.getCropSeason());
-        cropEntity.setField(field);
-        // Save the updated CropEntity
-        cropDao.save(cropEntity);
+        // Update the CropEntity with new data
+        existingCrop.setCropCommonName(updateCrop.getCropCommonName());
+        existingCrop.setCropScientificName(updateCrop.getCropScientificName());
+        existingCrop.setCropImage(updateCrop.getCropImage());
+        existingCrop.setCategory(updateCrop.getCategory());
+        existingCrop.setCropSeason(updateCrop.getCropSeason());
+        existingCrop.setField(field);  // Set the updated field entity
 
-        System.out.println("Updated CropEntity: " + cropEntity.getCropCode() + " " + cropEntity.getCropCommonName());
+        // Save the updated entity
+        cropRepository.save(existingCrop);
     }
 
     @Override
     public void deleteCrop(String cropCode) {
-        Optional<CropEntity> selectedCropId = cropDao.findById(cropCode);
+        Optional<CropEntity> selectedCropId = cropRepository.findById(cropCode);
         if (!selectedCropId.isPresent()) {
             throw new CropNotFoundException("Crop not found");
-        }else {
-            cropDao.deleteById(cropCode);
+        } else {
+            cropRepository.deleteById(cropCode);
         }
     }
 
     @Override
     public CropResponse getSelectCrop(String cropCode) {
-        if (cropDao.existsById(cropCode)) {
-            CropEntity  cropEntityByCropCode = cropDao.getCropEntityByCropCode(cropCode);
+        if (cropRepository.existsById(cropCode)) {
+            CropEntity  cropEntityByCropCode = cropRepository.getCropEntityByCropCode(cropCode);
             return mapping.convertToCropDTO(cropEntityByCropCode);
         }else {
             return new CropErrorResponse(0,"Crop not found");
@@ -105,7 +105,7 @@ public class CropServiceImpl implements CropService {
 
     @Override
     public List<CropDTO> getAllCrops() {
-        List<CropEntity> getAllCrops = cropDao.findAll();
+        List<CropEntity> getAllCrops = cropRepository.findAll();
         return mapping.convertToCropDTOList(getAllCrops);
     }
 }

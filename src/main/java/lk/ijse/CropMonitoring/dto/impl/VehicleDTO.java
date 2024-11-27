@@ -1,5 +1,6 @@
 package lk.ijse.CropMonitoring.dto.impl;
 
+
 import lk.ijse.CropMonitoring.customObj.VehicleResponse;
 import lk.ijse.CropMonitoring.dto.SuperDTO;
 import lk.ijse.CropMonitoring.entity.enums.Status;
@@ -17,6 +18,5 @@ public class VehicleDTO implements SuperDTO, VehicleResponse {
     private String fuelType;
     private Status status;
     private String remarks;
-//    private StaffDTO staff;
     private String staffMemberId;
 }

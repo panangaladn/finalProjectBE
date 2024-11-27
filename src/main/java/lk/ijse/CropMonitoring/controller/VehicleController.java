@@ -2,11 +2,9 @@ package lk.ijse.CropMonitoring.controller;
 
 
 import lk.ijse.CropMonitoring.customObj.VehicleResponse;
-import lk.ijse.CropMonitoring.dto.impl.StaffDTO;
 import lk.ijse.CropMonitoring.dto.impl.VehicleDTO;
 import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
-import lk.ijse.CropMonitoring.exception.StaffNotFoundException;
-import lk.ijse.CropMonitoring.service.StaffService;
+import lk.ijse.CropMonitoring.exception.VehicleNotFoundException;
 import lk.ijse.CropMonitoring.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,19 +25,13 @@ public class VehicleController {
     @Autowired
     private VehicleService vehicleService;
 
-    @Autowired
-    private StaffService staffService;
-
-
 //    @Autowired
-//    private final Mapping mapping;
-
+//    private StaffService staffService;
 
     @GetMapping("/health")
     public String healthCheck(){
         return "Vehicle is running";
     }
-
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> saveVehicle(@RequestBody VehicleDTO vehicleDTO) {
@@ -48,14 +40,6 @@ public class VehicleController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle cannot be null");
         }
         try {
-            // Fetch StaffEntity based on staffMemberId
-            StaffDTO staffDTO = staffService.existByStaffMember(vehicleDTO.getStaffMemberId());
-            if (staffDTO == null) {
-                return new ResponseEntity<>("Staff not found", HttpStatus.NOT_FOUND);
-            }
-
-            vehicleDTO.setStaffMemberId(staffDTO.getStaffMemberId());
-
             // Save vehicle
             vehicleService.saveVehicle(vehicleDTO);
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -65,7 +49,6 @@ public class VehicleController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     @PatchMapping(value = "/{vehicleCode}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateStaff(@PathVariable("vehicleCode") String vehicleCode , @RequestBody VehicleDTO vehicleDTO){
@@ -77,29 +60,25 @@ public class VehicleController {
 
             return new ResponseEntity<>(HttpStatus.CREATED);
 
-        }catch (StaffNotFoundException e){
+        }catch (VehicleNotFoundException e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-
     //Delete Vehicle
-
     @DeleteMapping(value = "/{vehicleCode}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable("vehicleCode") String vehicleCode){
         try {
             vehicleService.deleteVehicle(vehicleCode);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }catch (StaffNotFoundException e){
+        }catch (VehicleNotFoundException e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 
     //Get Vehicle
     @GetMapping(value = "/{vehicleCode}", produces = MediaType.APPLICATION_JSON_VALUE)

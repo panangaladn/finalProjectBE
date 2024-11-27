@@ -8,15 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "field_staff_details")
 public class FieldStaffDetailsEntity {
-
     @EmbeddedId
     private FieldStaffDetailsPK fieldStaffDetailsPK;
 

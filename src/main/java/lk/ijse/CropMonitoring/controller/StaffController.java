@@ -1,4 +1,5 @@
 package lk.ijse.CropMonitoring.controller;
+
 import lk.ijse.CropMonitoring.customObj.StaffResponse;
 import lk.ijse.CropMonitoring.dto.impl.StaffDTO;
 import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
@@ -46,8 +47,6 @@ public class StaffController {
             }
         }
     }
-
-
 
     //Update Staff
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -3,11 +3,10 @@ package lk.ijse.CropMonitoring.service;
 import jakarta.transaction.Transactional;
 import lk.ijse.CropMonitoring.customObj.EquipmentErrorResponse;
 import lk.ijse.CropMonitoring.customObj.EquipmentResponse;
-import lk.ijse.CropMonitoring.dao.EquipmentDao;
-import lk.ijse.CropMonitoring.dao.FieldDao;
-import lk.ijse.CropMonitoring.dao.StaffDao;
 import lk.ijse.CropMonitoring.dto.impl.EquipmentDTO;
-import lk.ijse.CropMonitoring.dto.impl.FieldDTO;
+import lk.ijse.CropMonitoring.repository.EquipmentRepository;
+import lk.ijse.CropMonitoring.repository.FieldRepository;
+import lk.ijse.CropMonitoring.repository.StaffRepository;
 import lk.ijse.CropMonitoring.entity.EquipmentEntity;
 import lk.ijse.CropMonitoring.entity.FieldEntity;
 import lk.ijse.CropMonitoring.entity.StaffEntity;
@@ -16,7 +15,10 @@ import lk.ijse.CropMonitoring.exception.EquipmentNotFoundException;
 import lk.ijse.CropMonitoring.util.AppUtil;
 import lk.ijse.CropMonitoring.util.Mapping;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,42 +27,39 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class EquipmentServiceImpl implements EquipmentService {
 
     @Autowired
     private final Mapping mapping;
 
-    private final EquipmentDao equipmentDao;
+    private final EquipmentRepository equipmentDao;
 
-    private final FieldDao fieldDao;
+    private final FieldRepository fieldDao;
 
-    private final StaffDao staffDao;
-
+    private final StaffRepository staffDao;
 
     @Override
     public void saveEquipment(EquipmentDTO equipmentDTO) {
-
         try {
             List<String> equipmentId = equipmentDao.findLastEquipmentId();
             String lastEquipmentId = equipmentId.isEmpty() ? null : equipmentId.get(0);
             equipmentDTO.setEquipmentId(AppUtil.generateNextEquipmentId(lastEquipmentId));
 
-            if (equipmentDao.existsByStaff_StaffMemberId(equipmentDTO.getStaff().getStaffMemberId())) {
+            //this equipment table exist
+            if (equipmentDao.existsByStaff_StaffMemberId(equipmentDTO.getStaffMemberId())) {
                 throw new DataPersistFailedException("Staff member is already assigned to another equipment.");
             }
 
-            FieldEntity field = fieldDao.findByFieldCode(equipmentDTO.getField().getFieldCode());
+            FieldEntity field = fieldDao.findByFieldCode(equipmentDTO.getFieldCode());
             if (field == null) {
                 throw new DataPersistFailedException("Field not found");
             }
 
-            StaffEntity staff = staffDao.findByStaffMemberId(equipmentDTO.getStaff().getStaffMemberId());
+            StaffEntity staff = staffDao.findByStaffMemberId(equipmentDTO.getStaffMemberId());
             if (staff == null) {
                 throw new DataPersistFailedException("Staff not found");
             }
-
-            equipmentDTO.setStaff(staff);
-            equipmentDTO.setField(field);
 
             EquipmentEntity savedEquipment = equipmentDao.save(mapping.convertToEquipmentEntity(equipmentDTO));
             if (savedEquipment == null) {
@@ -75,42 +74,53 @@ public class EquipmentServiceImpl implements EquipmentService {
     }
 
     @Override
-    public void updateEquipment(String equipmentId, EquipmentDTO equipmentDTO) {
+    public ResponseEntity<String> updateEquipment(String equipmentId, EquipmentDTO equipmentDTO) {
         try {
-            // Check if the equipment with the given ID exists
+            // Step 1: Check if the equipment with the given ID exists
             Optional<EquipmentEntity> tmpEquipmentEntity = equipmentDao.findById(equipmentId);
             if (!tmpEquipmentEntity.isPresent()) {
                 throw new EquipmentNotFoundException("Equipment not found");
             }
 
+            // Get the existing equipment entity
             EquipmentEntity existingEquipment = tmpEquipmentEntity.get();
 
-            // Get the staff member by staffMemberId
-            StaffEntity staff = staffDao.findByStaffMemberId(equipmentDTO.getStaff().getStaffMemberId());
+            // Step 2: Get the staff member by staffMemberId
+            StaffEntity staff = staffDao.findByStaffMemberId(equipmentDTO.getStaffMemberId());
             if (staff == null) {
                 throw new DataPersistFailedException("Staff not found");
             }
 
-            // Check if the staff is assigned to any other equipment (other than the one being updated)
-            // Find if there is any equipment assigned to this staff member (excluding the current one)
-            Optional<EquipmentEntity> staffAssignedEquipment = equipmentDao.findByStaff_StaffMemberIdAndEquipmentIdNot(
-                    equipmentDTO.getStaff().getStaffMemberId(), equipmentId);
+            // Step 3: Ensure that the field exists in the database
+            FieldEntity field = fieldDao.findByFieldCode(equipmentDTO.getFieldCode());
+            if (field == null) {
+                throw new DataPersistFailedException("Field not found");
+            }
 
+            // Step 4: Check if the staff is assigned to another equipment, but not the current one
+            Optional<EquipmentEntity> staffAssignedEquipment = equipmentDao.findByStaff_StaffMemberIdAndEquipmentIdNot(
+                    equipmentDTO.getStaffMemberId(), equipmentId);
+
+            // Debugging log to check what equipment the staff is assigned to
             if (staffAssignedEquipment.isPresent()) {
-                // If staff is assigned to another equipment (excluding the one being updated), block the update
+                System.out.println("Staff member " + equipmentDTO.getStaffMemberId() +
+                        " is already assigned to another equipment: " +
+                        staffAssignedEquipment.get().getEquipmentId());
                 throw new DataPersistFailedException("Staff member is already assigned to another equipment");
             }
 
-            // Update the existing equipment
+            // Step 5: Proceed with updating the equipment if all conditions are met
             existingEquipment.setName(equipmentDTO.getName());
             existingEquipment.setEquipmentType(equipmentDTO.getEquipmentType());
             existingEquipment.setStatus(equipmentDTO.getStatus());
-            existingEquipment.setField(equipmentDTO.getField());
+            existingEquipment.setField(field);
             existingEquipment.setStaff(staff);
 
-            // Save the updated equipment
+            // Step 6: Save the updated equipment
             equipmentDao.save(existingEquipment);
 
+            // Return success message
+            return new ResponseEntity<>("Equipment updated successfully", HttpStatus.OK);
         } catch (DataPersistFailedException e) {
             throw e;
         } catch (Exception e) {
@@ -121,9 +131,9 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public void deleteEquipment(String equipmentId) {
         Optional<EquipmentEntity> findId = equipmentDao.findById(equipmentId);
-        if(!findId.isPresent()) {
+        if (!findId.isPresent()) {
             throw new EquipmentNotFoundException("Customer not found");
-        }else {
+        } else {
             equipmentDao.deleteById(equipmentId);
         }
     }
@@ -131,8 +141,9 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public EquipmentResponse getSelectEquipment(String equipmentId) {
         if (equipmentDao.existsById(equipmentId)) {
-           EquipmentEntity equipment  = equipmentDao.getEquipmentEntityByEquipmentId(equipmentId);
-           return mapping.convertToEquipmentDTO(equipment);
+//           EquipmentEntity equipment  = equipmentDao.getEquipmentEntityByEquipmentId(equipmentId);
+            return mapping.convertToEquipmentDTO(equipmentDao.getReferenceById(equipmentId));
+//           return mapping.convertToEquipmentDTO(equipment);
         }else {
             return new EquipmentErrorResponse(0,"Equipment not found");
         }
@@ -141,6 +152,6 @@ public class EquipmentServiceImpl implements EquipmentService {
     @Override
     public List<EquipmentDTO> getAllEquipment() {
         List<EquipmentEntity> getAllEquipment = equipmentDao.findAll();
-        return mapping.convertToEquipmentDTOList(getAllEquipment);
+        return mapping.convertToEquipmentEntityDTOList(getAllEquipment);
     }
 }

@@ -10,7 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -32,4 +34,15 @@ public class StaffDTO implements SuperDTO, StaffResponse {
     private String contactNo;
     private String email;
     private Role role;
+
+    //Another
+    private String equipmentId;
+    private List<String> vehicleCodes = new ArrayList<>();
+
+
+    //Associate
+//    private List<FieldStaffDetailsEntity> fieldStaffDetailsList = new ArrayList<>();
+//    private List<StaffLogDetailsEntity> staffLogDetailsList = new ArrayList<>();
+    private List<String> fieldCode =  new ArrayList<>();
+    private List<String> logCodes = new ArrayList<>();
 }

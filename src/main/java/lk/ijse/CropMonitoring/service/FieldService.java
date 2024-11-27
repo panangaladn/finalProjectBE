@@ -7,6 +7,7 @@ import lk.ijse.CropMonitoring.dto.impl.FieldDTO;
 import java.util.List;
 
 public interface FieldService {
+
     void saveField(FieldDTO buildFieldDTO);
 
     void updateField(FieldDTO updateField);
@@ -16,8 +17,4 @@ public interface FieldService {
     FieldResponse getSelectField(String fieldCode);
 
     List<FieldDTO> getAllFields();
-
-
-    //Custom
-//    FieldEntity existByField(String fieldCode);
 }

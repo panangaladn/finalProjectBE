@@ -1,4 +1,4 @@
-package lk.ijse.CropMonitoring.dao;
+package lk.ijse.CropMonitoring.repository;
 
 import lk.ijse.CropMonitoring.entity.EquipmentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,16 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EquipmentDao extends JpaRepository<EquipmentEntity, String> {
+public interface EquipmentRepository extends JpaRepository<EquipmentEntity, String> {
+
 
     @Query("SELECT i.equipmentId FROM EquipmentEntity i ORDER BY i.equipmentId DESC")
     List<String> findLastEquipmentId();
 
     boolean existsByStaff_StaffMemberId(String staffMemberId);
 
-
-
     Optional<EquipmentEntity> findByStaff_StaffMemberIdAndEquipmentIdNot(String staffMemberId, String equipmentId);
-
-    EquipmentEntity getEquipmentEntityByEquipmentId(String equipmentId);
 }

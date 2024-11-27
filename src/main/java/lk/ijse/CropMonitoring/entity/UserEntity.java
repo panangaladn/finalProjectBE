@@ -1,6 +1,5 @@
 package lk.ijse.CropMonitoring.entity;
 
-
 import jakarta.persistence.*;
 import lk.ijse.CropMonitoring.entity.enums.Role;
 import lombok.AllArgsConstructor;
@@ -21,8 +20,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
-    @OneToOne(fetch = FetchType.LAZY, optional = true)
+    @OneToOne
     @JoinColumn(name = "staff_member_id", referencedColumnName = "staff_member_id")
     private StaffEntity staff;
 }

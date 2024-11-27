@@ -1,5 +1,6 @@
 package lk.ijse.CropMonitoring.entity;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lk.ijse.CropMonitoring.entity.association.FieldStaffDetailsEntity;
@@ -41,6 +42,7 @@ public class StaffEntity {
     private Date joinedDate;
 
     @Column(name = "date_of_birth")
+//    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date DOB;
 
     @Column(name = "address_line_1")
@@ -69,22 +71,30 @@ public class StaffEntity {
     private Role role;
 
 
-    @OneToOne(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "staff")
     private EquipmentEntity equipment;
 
-    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY) // Cascade if needed
+    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @OneToMany(mappedBy = "staff")
     @JsonIgnore
     private List<VehicleEntity> vehicleList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @OneToOne(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    @OneToOne(mappedBy = "staff")
     private UserEntity user;
 
     //Associate
 
-    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    @OneToMany(mappedBy = "staff")
     private List<FieldStaffDetailsEntity> fieldStaffDetailsList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<StaffLogDetailsEntity> staffLogDetailsList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//    @OneToMany(mappedBy = "staff")
+    private List<StaffLogDetailsEntity> staffLogDetailsList = new ArrayList<>();
 }

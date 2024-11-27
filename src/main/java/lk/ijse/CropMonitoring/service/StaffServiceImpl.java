@@ -3,8 +3,8 @@ package lk.ijse.CropMonitoring.service;
 import jakarta.transaction.Transactional;
 import lk.ijse.CropMonitoring.customObj.StaffErrorResponse;
 import lk.ijse.CropMonitoring.customObj.StaffResponse;
-import lk.ijse.CropMonitoring.dao.StaffDao;
 import lk.ijse.CropMonitoring.dto.impl.StaffDTO;
+import lk.ijse.CropMonitoring.repository.StaffRepository;
 import lk.ijse.CropMonitoring.entity.StaffEntity;
 import lk.ijse.CropMonitoring.exception.DataPersistFailedException;
 import lk.ijse.CropMonitoring.exception.StaffNotFoundException;
@@ -23,7 +23,7 @@ import java.util.Optional;
 public class StaffServiceImpl implements StaffService{
 
     @Autowired
-    private StaffDao staffDao;
+    private StaffRepository staffDao;
 
     @Autowired
     private Mapping mapping;
@@ -77,7 +77,6 @@ public class StaffServiceImpl implements StaffService{
         }else {
             staffDao.deleteById(staffMemberId);
         }
-
     }
 
     @Override
@@ -95,9 +94,9 @@ public class StaffServiceImpl implements StaffService{
     }
 
     //custom
-    @Override
-    public StaffDTO existByStaffMember(String staffMemberId) {
-        StaffEntity byStaffMemberId = staffDao.findByStaffMemberId(staffMemberId);
-        return mapping.convertToStaffDTO(byStaffMemberId);
-    }
+//    @Override
+//    public StaffDTO existByStaffMember(String staffMemberId) {
+//        StaffEntity byStaffMemberId = staffDao.findByStaffMemberId(staffMemberId);
+//        return mapping.convertToStaffDTO(byStaffMemberId);
+//    }
 }

@@ -2,7 +2,6 @@ package lk.ijse.CropMonitoring.service;
 
 import lk.ijse.CropMonitoring.customObj.StaffResponse;
 import lk.ijse.CropMonitoring.dto.impl.StaffDTO;
-import lk.ijse.CropMonitoring.entity.StaffEntity;
 
 import java.util.List;
 
@@ -12,10 +11,10 @@ public interface StaffService {
     void updateStaff(String staffMemberId, StaffDTO staff);
 
     void deleteStaff(String staffMemberId);
-
+//
     StaffResponse getSelectStaff(String staffMemberId);
-
+//
     List<StaffDTO> getAllStaffs();
-
-    StaffDTO existByStaffMember(String staffMemberId);
+//
+//    StaffDTO existByStaffMember(String staffMemberId);
 }
