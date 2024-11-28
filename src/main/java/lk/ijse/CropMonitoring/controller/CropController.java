@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/v1/crops")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = {"http://127.0.0.1:5502", "http://localhost:5502"}) // Allow specific origins
 public class CropController {
     @Autowired
     private final CropService cropService;
