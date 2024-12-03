@@ -2,7 +2,10 @@ package lk.ijse.CropMonitoring.util;
 
 import lk.ijse.CropMonitoring.dto.impl.*;
 import lk.ijse.CropMonitoring.entity.*;
+import lk.ijse.CropMonitoring.entity.association.CropLogDetailsEntity;
+import lk.ijse.CropMonitoring.entity.association.FieldLogDetailsEntity;
 import lk.ijse.CropMonitoring.entity.association.FieldStaffDetailsEntity;
+import lk.ijse.CropMonitoring.entity.association.StaffLogDetailsEntity;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -120,11 +123,39 @@ public class Mapping {
     }
 
     /*------------------------------------------------MonitoringLog---------------------------------------------------*/
-    // MonitoringLogEntity to MonitoringLogDTO
-    public MonitoringLogDTO convertToMonitoringLogDTO(MonitoringLogEntity log) {
-        return modelMapper.map(log, MonitoringLogDTO.class);
-    }
 
+    public MonitoringLogDTO convertToMonitoringLogDTO(MonitoringLogEntity log) {
+        MonitoringLogDTO dto = modelMapper.map(log, MonitoringLogDTO.class);
+
+        // Extract fieldCodes from fieldLogDetailsList
+        if (log.getFieldLogDetailsList() != null && !log.getFieldLogDetailsList().isEmpty()) {
+            List<String> fieldCodeList = log.getFieldLogDetailsList().stream()
+                    .map(FieldLogDetailsEntity::getField)  // Access the FieldEntity
+                    .map(FieldEntity::getFieldCode)  // Extract fieldCode
+                    .collect(Collectors.toList());
+            dto.setFieldCodes(fieldCodeList);
+        }
+
+        // Extract cropCodes from cropLogDetailsList
+        if (log.getCropLogDetailsList() != null && !log.getCropLogDetailsList().isEmpty()) {
+            List<String> cropCodeList = log.getCropLogDetailsList().stream()
+                    .map(CropLogDetailsEntity::getCrop)  // Access the CropEntity
+                    .map(CropEntity::getCropCode)  // Extract cropCode
+                    .collect(Collectors.toList());
+            dto.setCropCodes(cropCodeList);
+        }
+
+        // Extract staffMemberIds from staffLogDetailsList
+        if (log.getStaffLogDetailsList() != null && !log.getStaffLogDetailsList().isEmpty()) {
+            List<String> staffMemberIdList = log.getStaffLogDetailsList().stream()
+                    .map(StaffLogDetailsEntity::getStaff)  // Access the StaffEntity
+                    .map(StaffEntity::getStaffMemberId)  // Extract staffMemberId
+                    .collect(Collectors.toList());
+            dto.setStaffMemberIds(staffMemberIdList);
+        }
+
+        return dto;
+    }
     // MonitoringLogDTO to MonitoringLogEntity
     public MonitoringLogEntity convertToMonitoringLogEntity(MonitoringLogDTO dto) {
         return modelMapper.map(dto, MonitoringLogEntity.class);
@@ -136,7 +167,6 @@ public class Mapping {
                 .map(this::convertToMonitoringLogDTO)
                 .toList();
     }
-
 
     /*------------------------------------------------Equipment---------------------------------------------------*/
 

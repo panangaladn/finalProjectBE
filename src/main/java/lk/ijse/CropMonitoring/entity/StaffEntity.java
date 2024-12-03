@@ -1,6 +1,7 @@
 package lk.ijse.CropMonitoring.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lk.ijse.CropMonitoring.entity.association.FieldStaffDetailsEntity;
@@ -38,11 +39,12 @@ public class StaffEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "joined_date")
     private Date joinedDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "date_of_birth")
-//    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date DOB;
 
     @Column(name = "address_line_1")

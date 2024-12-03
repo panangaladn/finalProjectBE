@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 public class EquipmentEntity {
     @Id
-    @Column(name = "equipment_id", nullable = false, updatable = false)
+    @Column(name = "equipment_id", nullable = false)
     private String equipmentId;
     @Column(name = "equipment_name")
     private String name;

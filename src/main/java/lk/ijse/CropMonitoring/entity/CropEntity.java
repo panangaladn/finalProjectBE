@@ -36,7 +36,7 @@ public class CropEntity {
     private String cropSeason;
 
     // Many-to-one relationship with FieldEntity, nullable to allow removal
-    @JsonBackReference
+    //@JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "field_code", referencedColumnName = "field_code")
     private FieldEntity field;

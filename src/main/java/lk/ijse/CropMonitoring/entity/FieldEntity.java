@@ -38,7 +38,7 @@ public class FieldEntity {
     private String fieldImage2;
 
 
-    @JsonManagedReference
+    //@JsonManagedReference
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CropEntity> cropList = new ArrayList<>();
 

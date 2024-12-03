@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/v1/crops")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://127.0.0.1:5502", "http://localhost:5502"}) // Allow specific origins
+@CrossOrigin("*")
 public class CropController {
     @Autowired
     private final CropService cropService;
@@ -42,30 +42,49 @@ public class CropController {
             @RequestParam("cropImage") MultipartFile cropImage,
             @RequestParam("category") String category,
             @RequestParam("cropSeason") String cropSeason,
-            @RequestParam("fieldCode") String fieldCode){
+            @RequestParam("fieldCode") String fieldCode) {
+
+        // Input Validation
+        if (cropCommonName == null || cropCommonName.isEmpty()) {
+            return new ResponseEntity<>("Crop common name is required", HttpStatus.BAD_REQUEST);
+        }
+        if (cropScientificName == null || cropScientificName.isEmpty()) {
+            return new ResponseEntity<>("Crop scientific name is required", HttpStatus.BAD_REQUEST);
+        }
+        if (fieldCode == null || fieldCode.isEmpty()) {
+            return new ResponseEntity<>("Field code is required", HttpStatus.BAD_REQUEST);
+        }
+        if (cropImage == null || cropImage.isEmpty()) {
+            return new ResponseEntity<>("Crop image is required", HttpStatus.BAD_REQUEST);
+        }
+        if (!cropImage.getContentType().matches("image/(jpeg|png|jpg)")) {
+            return new ResponseEntity<>("Only JPEG or PNG images are allowed", HttpStatus.BAD_REQUEST);
+        }
 
         try {
-            byte[] imageByteCollection1 = cropImage.getBytes();
-            String base64ProfilePic1 = AppUtil.toBase64ProfilePic(imageByteCollection1);
+            // Base64 Encode Image
+            byte[] imageBytes = cropImage.getBytes();
+            String base64Image = AppUtil.toBase64ProfilePic(imageBytes);
 
+            // Build DTO
             CropDTO buildCropDTO = new CropDTO();
             buildCropDTO.setCropCommonName(cropCommonName);
             buildCropDTO.setCropScientificName(cropScientificName);
-            buildCropDTO.setCropImage(base64ProfilePic1);
+            buildCropDTO.setCropImage(base64Image);
             buildCropDTO.setCategory(category);
             buildCropDTO.setCropSeason(cropSeason);
             buildCropDTO.setFieldCode(fieldCode);
 
+            // Save Crop
             cropService.saveCrop(buildCropDTO);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        }catch (DataPersistFailedException e){
+            return new ResponseEntity<>("Crop saved successfully", HttpStatus.CREATED);
+        } catch (DataPersistFailedException e) {
             return new ResponseEntity<>("Crop not saved: Field not found for the provided fieldCode", HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     // Update Crop
     @PatchMapping(value = "/{cropCode}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateCrop(
